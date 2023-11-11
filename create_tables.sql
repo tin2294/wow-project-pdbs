@@ -310,7 +310,6 @@ CREATE TABLE rental_service (
     dropoff_date   DATETIME NOT NULL COMMENT 'Drop off date',
     start_odometer BIGINT NOT NULL COMMENT 'Starting odometer read',
     end_odometer   BIGINT NOT NULL COMMENT 'End odometer read',
-    odometer_limit BIGINT NOT NULL COMMENT 'Odometer limit',
     vehicle_id     BIGINT,
     cust_id        BIGINT
 );
