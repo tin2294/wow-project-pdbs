@@ -354,7 +354,6 @@ COMMENT ON COLUMN rental_service.end_odometer IS
     'End odometer read'; */
 
 /* Moved to CREATE TABLE
-COMMENT ON COLUMN rental_service.odometer_limit IS
 
 ALTER TABLE rental_service ADD CONSTRAINT rental_service_pk PRIMARY KEY ( service_id );
 
