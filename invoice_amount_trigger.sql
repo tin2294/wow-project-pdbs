@@ -5,7 +5,7 @@ CREATE TRIGGER INVOICE_AMOUNT_INSERT BEFORE
     FOR EACH ROW
 BEGIN
     DECLARE rental_days INT;
-	DECLARE daily_mileage DECIMAL(10, 2);    
+    DECLARE daily_mileage DECIMAL(10, 2);    
     DECLARE mile_limit DECIMAL(10, 2);
     DECLARE miles_driven DECIMAL(10,2);
     DECLARE daily_rate DECIMAL(10, 2);
