@@ -1,5 +1,5 @@
 -- SQLINES DEMO *** le SQL Developer Data Modeler 23.1.0.087.0806
--- SQLINES DEMO *** -11-09 15:42:33 EST
+-- SQLINES DEMO *** -11-11 23:35:23 EST
 -- SQLINES DEMO *** le Database 21c
 -- SQLINES DEMO *** le Database 21c
 
@@ -15,7 +15,7 @@ CREATE TABLE corp_cust (
     company_name VARCHAR(30) NOT NULL COMMENT 'Name of the company',
     company_no   VARCHAR(30) NOT NULL COMMENT 'Registration number of company',
     emp_id       BIGINT NOT NULL COMMENT 'ID of the employee',
-    discid       BIGINT NOT NULL
+    discid       BIGINT
 );
 
 /* Moved to CREATE TABLE
@@ -41,17 +41,6 @@ CREATE UNIQUE INDEX corp_cust__idx ON
     ASC );
 
 ALTER TABLE corp_cust ADD CONSTRAINT corp_cust_pk PRIMARY KEY ( cust_id );
-
--- SQLINES LICENSE FOR EVALUATION USE ONLY
-CREATE TABLE corp_disc (
-    discid BIGINT NOT NULL COMMENT 'Discount Coupon ID'
-);
-
-/* Moved to CREATE TABLE
-COMMENT ON COLUMN corp_disc.discid IS
-    'Discount Coupon ID'; */
-
-ALTER TABLE corp_disc ADD CONSTRAINT corp_disc_pk PRIMARY KEY ( discid );
 
 --  Customers
 -- SQLINES LICENSE FOR EVALUATION USE ONLY
@@ -111,11 +100,11 @@ ALTER TABLE customer ADD CONSTRAINT customer_pk PRIMARY KEY ( cust_id );
 CREATE TABLE discount (
     discid     BIGINT NOT NULL COMMENT 'Discount Coupon ID',
     percentage DECIMAL(7, 2) NOT NULL COMMENT 'Percentage of discount in decimals',
-    disc_type  VARCHAR(1) NOT NULL COMMENT 'Type of Discount'
+    disc_type  VARCHAR(8) NOT NULL COMMENT 'Type of Discount'
 );
 
 ALTER TABLE discount
-    ADD CONSTRAINT ch_inh_discount CHECK ( disc_type IN ( 'C', 'I' ) );
+    ADD CONSTRAINT ch_inh_discount CHECK ( disc_type IN ( 'DISCOUNT', 'I' ) );
 
 ALTER TABLE discount COMMENT
     'Discount coupons';
@@ -213,9 +202,9 @@ COMMENT ON COLUMN inv_disc.discid IS
 --  Invoices
 -- SQLINES LICENSE FOR EVALUATION USE ONLY
 CREATE TABLE invoice (
-    invoice_id BIGINT NOT NULL COMMENT 'Invoice ID',
-    `DATE`     DATETIME NOT NULL COMMENT 'Invoice date',
-    service_id INT NOT NULL
+    invoice_id   BIGINT NOT NULL COMMENT 'Invoice ID',
+    invoice_date DATETIME NOT NULL COMMENT 'Invoice date',
+    service_id   INT NOT NULL
 );
 
 ALTER TABLE invoice COMMENT
@@ -226,7 +215,7 @@ COMMENT ON COLUMN invoice.invoice_id IS
     'Invoice ID'; */
 
 /* Moved to CREATE TABLE
-COMMENT ON COLUMN invoice."DATE" IS
+COMMENT ON COLUMN invoice.invoice_date IS
     'Invoice date'; */
 
 ALTER TABLE invoice ADD CONSTRAINT invoice_pk PRIMARY KEY ( invoice_id );
@@ -353,7 +342,6 @@ COMMENT ON COLUMN rental_service.start_odometer IS
 COMMENT ON COLUMN rental_service.end_odometer IS
     'End odometer read'; */
 
-
 ALTER TABLE rental_service ADD CONSTRAINT rental_service_pk PRIMARY KEY ( service_id );
 
 --  Vehicle classes
@@ -398,7 +386,7 @@ CREATE TABLE vehicle (
     vin        VARCHAR(30) NOT NULL COMMENT 'Vehicle Identification Number',
     make       VARCHAR(30) NOT NULL COMMENT 'Make of vehicle',
     model      VARCHAR(30) NOT NULL COMMENT 'Model of vehicle',
-    year       DOUBLE NOT NULL COMMENT 'Year of the car',
+    year       BIGINT(4) NOT NULL COMMENT 'Year of the car',
     lp_state   VARCHAR(2) NOT NULL COMMENT 'License Plate State (abbreviated)',
     lp_number  VARCHAR(8) NOT NULL COMMENT 'License Plate number',
     classid    BIGINT NOT NULL,
@@ -439,15 +427,11 @@ COMMENT ON COLUMN vehicle.lp_number IS
 ALTER TABLE vehicle ADD CONSTRAINT vehicle_pk PRIMARY KEY ( vehicle_id );
 
 ALTER TABLE corp_cust
-    ADD CONSTRAINT corp_cust_corp_disc_fk FOREIGN KEY ( discid )
-        REFERENCES corp_disc ( discid );
-
-ALTER TABLE corp_cust
     ADD CONSTRAINT corp_cust_customer_fk FOREIGN KEY ( cust_id )
         REFERENCES customer ( cust_id );
 
-ALTER TABLE corp_disc
-    ADD CONSTRAINT corp_disc_discount_fk FOREIGN KEY ( discid )
+ALTER TABLE corp_cust
+    ADD CONSTRAINT corp_cust_discount_fk FOREIGN KEY ( discid )
         REFERENCES discount ( discid );
 
 ALTER TABLE indiv_cust
@@ -494,195 +478,178 @@ ALTER TABLE vehicle
     ADD CONSTRAINT vehicle_vclass_fk FOREIGN KEY ( classid )
         REFERENCES vclass ( classid );
 
--- SQLINES LICENSE FOR EVALUATION USE ONLY
 
--- FIRST TRIGGER: individual customer and customer super type
+-- SQLINES LICENSE FOR EVALUATION USE ONLY
+DROP TRIGGER IF EXISTS arc_fkarc_5_indiv_cust_insert;
+
 DELIMITER //
-CREATE TRIGGER arc_fkarc_3_indiv_cust_insert BEFORE
-	INSERT on indiv_cust
+
+CREATE TRIGGER arc_fkarc_5_indiv_cust_insert BEFORE
+    INSERT ON indiv_cust
     FOR EACH ROW
 BEGIN
-    DECLARE d CHAR(1);
+    DECLARE d VARCHAR(1);
 
-    SELECT a.cust_type INTO d
-    FROM customer a
-    WHERE a.cust_id = NEW.cust_id;
+    -- Declare the condition handler for not found
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        -- Handle not found condition
+        SET d = NULL;
+    END;
 
+    -- Declare the condition handler for SQL exceptions
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Handle SQL exception
+        RESIGNAL;
+    END;
+
+    -- Select cust_type into d from customer
+    SELECT cust_type INTO d
+    FROM customer
+    WHERE cust_id = NEW.cust_id;
+
+    -- Check if d is null or not equal to 'I'
     IF (d IS NULL OR d <> 'I') THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'FK INDIV_CUST_CUSTOMER_FK in Table INDIV_CUST violates Arc constraint on Table CUSTOMER - discriminator column CUST_TYPE doesn''t have value ''I''';
     END IF;
-END //
+END;
+//
+
 DELIMITER ;
 
--- FIRST TRIGGER: individual customer and customer super type
+DROP TRIGGER IF EXISTS arc_fkarc_5_indiv_cust_update;
+
 DELIMITER //
-CREATE TRIGGER arc_fkarc_3_indiv_cust_update BEFORE
-	UPDATE on indiv_cust
+
+CREATE TRIGGER arc_fkarc_5_indiv_cust_update BEFORE
+    UPDATE ON indiv_cust
     FOR EACH ROW
 BEGIN
-    DECLARE d CHAR(1);
+    DECLARE d VARCHAR(1);
 
-    SELECT a.cust_type INTO d
-    FROM customer a
-    WHERE a.cust_id = NEW.cust_id;
+    -- Declare the condition handler for not found
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        -- Handle not found condition
+        SET d = NULL;
+    END;
 
+    -- Declare the condition handler for SQL exceptions
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Handle SQL exception
+        RESIGNAL;
+    END;
+
+    -- Select cust_type into d from customer
+    SELECT cust_type INTO d
+    FROM customer
+    WHERE cust_id = NEW.cust_id;
+
+    -- Check if d is null or not equal to 'I'
     IF (d IS NULL OR d <> 'I') THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'FK INDIV_CUST_CUSTOMER_FK in Table INDIV_CUST violates Arc constraint on Table CUSTOMER - discriminator column CUST_TYPE doesn''t have value ''I''';
     END IF;
-END; //
+END;
+//
+
 DELIMITER ;
 
 
-
 -- SQLINES LICENSE FOR EVALUATION USE ONLY
+DROP TRIGGER IF EXISTS arc_fkarc_5_corp_cust_insert;
 
--- SECOND TRIGGER: corporate customers and customers
 DELIMITER //
 
-CREATE TRIGGER arc_fkarc_3_corp_cust_insert BEFORE
+CREATE TRIGGER arc_fkarc_5_corp_cust_insert BEFORE
     INSERT ON corp_cust
     FOR EACH ROW
-
 BEGIN
     DECLARE d VARCHAR(1);
-    SELECT
-        a.cust_type
-    INTO d
-    FROM
-        customer a
-    WHERE
-        a.cust_id = new.cust_id;
 
-    IF ( d IS NULL OR d <> 'C' ) THEN
+    -- Declare the condition handler for not found
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        -- Handle not found condition
+        SET d = NULL;
+    END;
+
+    -- Declare the condition handler for SQL exceptions
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Handle SQL exception
+        RESIGNAL;
+    END;
+
+    -- Select cust_type into d from customer
+    SELECT cust_type INTO d
+    FROM customer
+    WHERE cust_id = NEW.cust_id;
+
+    -- Check if d is null or not equal to 'C'
+    IF (d IS NULL OR d <> 'C') THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'FK CORP_CUST_CUSTOMER_FK in Table CORP_CUST violates Arc constraint on Table CUSTOMER - discriminator column CUST_TYPE doesn''t have value ''C''';
     END IF;
-END; //
+END;
+//
 
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS arc_fkarc_5_corp_cust_update;
+
 DELIMITER //
 
-CREATE TRIGGER arc_fkarc_3_corp_cust_update BEFORE
+CREATE TRIGGER arc_fkarc_5_corp_cust_update BEFORE
     UPDATE ON corp_cust
     FOR EACH ROW
-
 BEGIN
     DECLARE d VARCHAR(1);
-    SELECT
-        a.cust_type
-    INTO d
-    FROM
-        customer a
-    WHERE
-        a.cust_id = new.cust_id;
 
-    IF ( d IS NULL OR d <> 'C' ) THEN
+    -- Declare the condition handler for not found
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        -- Handle not found condition
+        SET d = NULL;
+    END;
+
+    -- Declare the condition handler for SQL exceptions
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Handle SQL exception
+        RESIGNAL;
+    END;
+
+    -- Select cust_type into d from customer
+    SELECT cust_type INTO d
+    FROM customer
+    WHERE cust_id = NEW.cust_id;
+
+    -- Check if d is null or not equal to 'C'
+    IF (d IS NULL OR d <> 'C') THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'FK CORP_CUST_CUSTOMER_FK in Table CORP_CUST violates Arc constraint on Table CUSTOMER - discriminator column CUST_TYPE doesn''t have value ''C''';
     END IF;
-END; //
+END;
+//
 
-DELIMITER ;
-
-
--- SQLINES LICENSE FOR EVALUATION USE ONLY
-
--- THIRD TRIGGER: Individual discounts and discount supertype
-DELIMITER //
-
-CREATE TRIGGER arc_fkarc_4_individual_disc_insert BEFORE
-    INSERT ON individual_disc
-    FOR EACH ROW
-BEGIN
-    DECLARE d CHAR(1);
-
-    SELECT a.disc_type INTO d
-    FROM discount a
-    WHERE a.discid = NEW.discid;
-
-    IF (d IS NULL OR d <> 'I') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'FK INDIVIDUAL_DISC_DISCOUNT_FK in Table INDIVIDUAL_DISC violates Arc constraint on Table DISCOUNT - discriminator column DISC_TYPE doesn''t have value ''I''';
-    END IF;
-END //
-
-DELIMITER ;
-
-DELIMITER //
-
-CREATE TRIGGER arc_fkarc_4_individual_disc_update BEFORE
-    UPDATE ON individual_disc
-    FOR EACH ROW
-BEGIN
-    DECLARE d CHAR(1);
-
-    SELECT a.disc_type INTO d
-    FROM discount a
-    WHERE a.discid = NEW.discid;
-
-    IF (d IS NULL OR d <> 'I') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'FK INDIVIDUAL_DISC_DISCOUNT_FK in Table INDIVIDUAL_DISC violates Arc constraint on Table DISCOUNT - discriminator column DISC_TYPE doesn''t have value ''I''';
-    END IF;
-END //
-
-DELIMITER ;
-
-
--- SQLINES LICENSE FOR EVALUATION USE ONLY
-
--- FOURTH TRIGGER: customer discounts and discount supertype
-DELIMITER //
-CREATE TRIGGER arc_fkarc_4_corp_disc_insert BEFORE
-    INSERT ON corp_disc
-    FOR EACH ROW
-BEGIN
-    DECLARE d CHAR(1);
-
-    SELECT a.disc_type INTO d
-    FROM discount a
-    WHERE a.discid = NEW.discid;
-
-    IF (d IS NULL OR d <> 'C') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'FK CORP_DISC_DISCOUNT_FK in Table CORP_DISC violates Arc constraint on Table DISCOUNT - discriminator column DISC_TYPE doesn''t have value ''C''';
-    END IF;
-END //
-DELIMITER ;
-
-DELIMITER //
-CREATE TRIGGER arc_fkarc_4_corp_disc_update BEFORE
-    UPDATE ON corp_disc
-    FOR EACH ROW
-BEGIN
-    DECLARE d CHAR(1);
-
-    SELECT a.disc_type INTO d
-    FROM discount a
-    WHERE a.discid = NEW.discid;
-
-    IF (d IS NULL OR d <> 'C') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'FK CORP_DISC_DISCOUNT_FK in Table CORP_DISC violates Arc constraint on Table DISCOUNT - discriminator column DISC_TYPE doesn''t have value ''C''';
-    END IF;
-END //
 DELIMITER ;
 
 -- SQLINES DEMO *** per Data Modeler Summary Report: 
 -- 
--- SQLINES DEMO ***                        13
+-- SQLINES DEMO ***                        12
 -- SQLINES DEMO ***                         1
--- SQLINES DEMO ***                        28
+-- SQLINES DEMO ***                        26
 -- SQLINES DEMO ***                         0
 -- SQLINES DEMO ***                         0
 -- SQLINES DEMO ***                         0
 -- SQLINES DEMO *** DY                      0
 -- SQLINES DEMO ***                         0
 -- SQLINES DEMO ***                         0
--- SQLINES DEMO ***                         4
+-- SQLINES DEMO ***                         2
 -- SQLINES DEMO ***                         0
 -- SQLINES DEMO ***  TYPE                   0
 -- SQLINES DEMO ***  TYPE                   0
