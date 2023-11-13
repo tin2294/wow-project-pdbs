@@ -100,7 +100,7 @@ ALTER TABLE customer ADD CONSTRAINT customer_pk PRIMARY KEY ( cust_id );
 CREATE TABLE discount (
     discid     BIGINT NOT NULL COMMENT 'Discount Coupon ID',
     percentage DECIMAL(7, 2) NOT NULL COMMENT 'Percentage of discount in decimals',
-    disc_type  VARCHAR(8) NOT NULL COMMENT 'Type of Discount'
+    disc_type  VARCHAR(8) COMMENT 'Type of Discount'
 );
 
 ALTER TABLE discount
