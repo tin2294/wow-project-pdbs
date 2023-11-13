@@ -69,7 +69,11 @@ VALUES
 (14, 'VIN111406789', 'Infiniti', 'G6', 2021, 'IL', 'TRS111', 4, 15),
 (15, 'VIN123400009', 'Mercedes', 'GLE Coupe', 2023, 'CO', 'TRS222', 8, 12),
 (16, 'VIN000000789', 'BMW', 'X1', 2021, 'CA', 'DMD292', 7, 8),
-(17, 'VIN122233789', 'Audi', 'A6', 2018, 'MA', 'DMR300', 6, 10);
+(17, 'VIN122233789', 'Audi', 'A6', 2018, 'MA', 'DMR300', 6, 10),
+(18, 'NIV199400009', 'Mercedes', 'GLE Coupe', 2023, 'CO', 'TRS222', 8, 12),
+(19, 'VIN009900799', 'BMW', 'X1', 2021, 'CA', 'DMD292', 7, 8),
+(20, 'VIN122234489', 'Audi', 'A6', 2018, 'MA', 'DMR300', 6, 10)
+;
 
 -- Insert data into customer
 INSERT INTO customer (cust_id, address_houseno, address_street, address_state, address_city, address_zipcode, phone, cust_type)
@@ -107,7 +111,15 @@ VALUES
   (32, 101, 'Narcissus Street', 'TX', 'Dallas', '75201', '4567890123', 'I'),
   (33, 202, 'Orchid Road', 'NY', 'Albany', '12201', '5678901234', 'I'),
   (34, 303, 'Peony Avenue', 'FL', 'Jacksonville', '32201', '6789012345', 'I'),
-  (35, 404, 'Quince Lane', 'IL', 'Springfield', '62701', '7890123456', 'I');
+  (35, 400, 'Peony Lane', 'IL', 'Springfield', '62700', '1234567891', 'I'),
+  (36, 700, 'Jasmine Road', 'GA', 'Savannah', '31401', '1200067890', 'I'),
+  (37, 112, 'Lavender Avenue', 'CO', 'Boulder', '80301', '2225678901', 'I'),
+  (38, 100, 'Magnolia Lane', 'CA', 'San Diego', '92101', '3433333012', 'I'),
+  (39, 302, 'Clove Street', 'TX', 'Dallas', '75201', '4512340123', 'I'),
+  (40, 564, 'Lilly Road', 'NY', 'Albany', '12201', '5123901234', 'I'),
+  (41, 367, 'Peru Avenue', 'FL', 'Jacksonville', '32201', '1999012345', 'I'),
+  (42, 432, 'Quincy Lane', 'IL', 'Springfield', '62701', '7890122226', 'I')
+  ;
 
 -- Insert data into discount
 INSERT INTO discount (discid, percentage, disc_type)
@@ -140,7 +152,22 @@ VALUES
 (27, 0.40, NULL),
 (28, 0.45, 'I'),
 (29, 0.50, NULL),
-(30, 0.55, 'I');
+(30, 0.55, 'I'),
+(31, 0.90, NULL),
+(32, 0.95, 'I'),
+(33, 0.20, NULL),
+(34, 0.05, 'I'),
+(35, 0.10, NULL),
+(36, 0.15, 'I'),
+(37, 0.20, NULL),
+(38, 0.25, 'I'),
+(39, 0.30, NULL),
+(40, 0.35, 'I'),
+(41, 0.40, NULL),
+(42, 0.45, 'I'),
+(43, 0.50, NULL),
+(44, 0.55, 'I')
+;
 
 -- Insert data into corp_cust
 INSERT INTO corp_cust (cust_id, company_name, company_no, emp_id, discid)
@@ -179,10 +206,17 @@ VALUES
 (29, 'Logan', 'Cruz', 'PQR987', 'XYZ Insurance', '876543'),
 (30, 'Aria', 'Ward', 'STU321', 'ABC Insurance', '543210'),
 (31, 'Lucas', 'Fletcher', 'VWX654', 'PQR Insurance', '210987'),
-(32, 'Zoe', 'Hansen', 'YZA987', 'XYZ Insurance', '876543'),
-(33, 'Leo', 'Reyes', 'HIJ321', 'ABC Insurance', '543210'),
-(34, 'Hazel', 'Ortega', 'NOP654', 'PQR Insurance', '210987'),
-(35, 'Mason', 'Schmidt', 'QRS987', 'XYZ Insurance', '876543');
+(32, 'Zoe', 'Hansen', 'YZA987', 'LCZ Insurance', '870043'),
+(33, 'Leo', 'Reyes', 'HIJ111', 'DL Insurance', '003210'),
+(34, 'Hazel', 'Ortega', 'NOP114', 'SMD Insurance', '211187'),
+(35, 'Mason', 'Schmidt', 'QRS227', 'BFR Insurance', '876113'),
+(36, 'Logan', 'Cruz', 'PQR447', 'DEO Insurance', '822543'),
+(37, 'Aria', 'Ward', 'STU551', 'CM Insurance', '543310'),
+(38, 'Lucas', 'Fletcher', 'VWX664', 'DL Insurance', '217787'),
+(39, 'Zoe', 'Hansen', 'YZA777', 'OR Insurance', '876555'),
+(40, 'Leo', 'Reyes', 'HIJ881', 'WER Insurance', '549870'),
+(41, 'Hazel', 'Ortega', 'NOP994', 'TRY Insurance', '212287'),
+(42, 'Mason', 'Schmidt', 'QRS007', 'BUT Insurance', '872243');
 ;
 
 -- Insert data into individual_disc
@@ -194,6 +228,7 @@ VALUES
 (8, '2023-05-02', '2023-06-01', 24),
 (10, '2023-06-02', '2023-07-01', 25),
 (12, '2023-07-02', '2023-08-01', 26),
+(14, '2023-05-01', '2023-06-01', 24),
 (16, '2023-08-02', '2023-09-01', 27),
 (18, '2023-09-02', '2023-10-01', 28),
 (20, '2023-10-02', '2023-11-01', 28),
@@ -201,7 +236,15 @@ VALUES
 (24, '2023-12-02', '2024-01-01', 30),
 (26, '2024-01-02', '2024-02-01', 31),
 (28, '2024-02-02', '2024-03-01', 33),
-(30, '2024-03-02', '2024-04-01', 35);
+(30, '2024-03-02', '2024-04-01', 35),
+(32, '2023-10-02', '2023-11-01', 28),
+(34, '2023-11-02', '2023-12-01', 29),
+(36, '2023-12-02', '2024-01-01', 30),
+(38, '2024-01-02', '2024-02-01', 31),
+(40, '2024-02-02', '2024-03-01', 33),
+(42, '2024-03-02', '2024-04-01', 35),
+(44, '2024-03-02', '2024-04-01', 26)
+;
 
 -- Insert data into rental_service
 INSERT INTO rental_service (service_id, pickup_street, pickup_state, pickup_country, pickup_zipcode, pickup_date, dropoff_date, start_odometer, end_odometer, vehicle_id, cust_id)
@@ -224,7 +267,8 @@ VALUES
 (17, 'Chestnut Lane', 'OH', 'USA', '43201', '2023-01-31', '2023-02-05', 2600, 2800, 17, 18),
 (18, 'Sycamore Avenue', 'VA', 'USA', '23201', '2023-02-01', '2023-02-06', 2700, 2900, 3, 33),
 (19, 'Redwood Street', 'NJ', 'USA', '07001', '2023-02-02', '2023-02-07', 2800, 3000, 4, 28),
-(20, 'Oakwood Lane', 'MA', 'USA', '02101', '2023-02-03', '2023-02-08', 2900, 3100, 5, 21)
+(20, 'Oakwood Lane', 'MA', 'USA', '02101', '2023-02-03', '2023-02-08', 2900, 3100, 5, 21),
+(21, 'Myrtle Lane', 'CA', 'USA', '02100', '2023-02-02', '2023-02-03', 2940, 3000, 5, 28)
 ;
 
 -- Insert data into invoice
@@ -248,24 +292,32 @@ VALUES
 (17, '2023-01-31', 17),
 (18, '2023-02-01', 18),
 (19, '2023-02-02', 19),
-(20, '2023-02-03', 20);
+(20, '2023-02-03', 20),
+(21, '2023-02-04', 21);
 
 -- Insert data into inv_disc
 INSERT INTO inv_disc (invoice_id, discid)
 VALUES
 (2, 2),
 (3, 13),
-(14, 3),
-(12, 4),
-(8, 5),
+(4, 3),
+(5, 4),
+(6, 5),
 (7, 6),
-(6, 7),
+(8, 7),
 (9, 6),
-(18, 8),
-(16, 9),
-(15, 10),
-(19, 12),
-(20, 11)
+(10, 8),
+(11, 9),
+(12, 10),
+(13, 12),
+(14, 11),
+(15, 5),
+(16, 6),
+(17, 7),
+(18, 6),
+(19, 8),
+(20, 9),
+(21, 10)
 ;
 
 -- Insert data into payment
